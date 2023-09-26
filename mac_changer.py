@@ -2,6 +2,7 @@
 
 import subprocess
 import optparse
+import re
 
 
 def change_mac(interface, new_mac):
@@ -25,9 +26,25 @@ def get_arguments():
     return options
 
 
+def get_current_mac(interface):
+    ifconfig_result = subprocess.check_output(["ifconfig", interface])
+    mac_address_search_result = re.search(r"\w\w:\w\w:\w\w:\w\w:\w\w:\w\w", ifconfig_result)
+    if mac_address_search_result:
+        return mac_address_search_result.group(0)
+    else:
+        print("Could not get mac address")
+
+
 options = get_arguments()
+current_mac = get_current_mac(options.interface)
 
 change_mac(options.interface, options.new_mac)
+current_mac = get_current_mac(options.interface)
+
+if current_mac == options.new_mac:
+    print("MAC address changed")
+else:
+    print("MAC did not changed")
 
 # subprocess.call("sudo ifconfig eth0 down", shell=True)
 # subprocess.call("sudo ifconfig eth0 hw ether 00:11:22:33:44:55", shell=True)
